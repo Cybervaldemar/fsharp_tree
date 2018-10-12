@@ -1,6 +1,7 @@
 ﻿open System
 open System.Collections
 open System.IO
+open System.Linq.Expressions
 
 
 let displayElement (element, level, isLast) =
@@ -20,19 +21,12 @@ let rec surveyByDirs (path: string, level: int) =
     
     let entryes = Directory.EnumerateFileSystemEntries path
     
-    if entryes |> Seq.isEmpty then 
-        exit 0
-    
-    let lastEl = entryes |> Seq.last
-    
-    for fsEntity in entryes do
-        if lastEl = fsEntity then
-            displayElement (fsEntity.Split '\\' |> Array.last, level, true)
-        else 
-            displayElement (fsEntity.Split '\\' |> Array.last, level, false)
-        
-        if Directory.Exists fsEntity then
-            surveyByDirs(fsEntity, level + 1)
+    if entryes |> Seq.isEmpty <> true then
+        for fsEntity in entryes do
+            displayElement (fsEntity.Split Path.DirectorySeparatorChar |> Array.last, level, entryes |> Seq.last = fsEntity)
+            
+            if Directory.Exists fsEntity then
+                surveyByDirs(fsEntity, level + 1)
 
 [<EntryPoint>]
 let main argv =
